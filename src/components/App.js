@@ -2,117 +2,59 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import NFT from "./NFT";
 import css from "../styles/NFT.module.css"
 import { Button } from "react-bootstrap";
-import { useEffect, useState } from "react";
-import { clusterApiUrl, Connection, PublicKey, Keypair, LAMPORTS_PER_SOL, Transaction, SystemProgram, } from "@solana/web3.js"
-import { createMint, getOrCreateAssociatedTokenAccount, mintTo, transfer, Account, getMint, getAccount, createMintToInstruction } from "@solana/spl-token"
+import { useState } from "react";
+import { clusterApiUrl, Connection, LAMPORTS_PER_SOL, Transaction, SystemProgram, } from "@solana/web3.js"
 
 
-let provider;
-const NETWORK = clusterApiUrl("devnet");
-const connection = new Connection(NETWORK);
+// let provider;
+// const NETWORK = clusterApiUrl("devnet");
 
 window.Buffer = require("buffer").Buffer
+
+const OWNER = "6ZtkKKvMuJ5AX6T2pVkfP9B1v4tC5dFm3yafWrEcsNqR"
+const connection = new Connection(clusterApiUrl("devnet"))
 
 function App() {
 
   const [activeAcc, setactiveAcc] = useState(null)
   let paths = []
 
-  useEffect(() => {
 
-    const getProvider = () => {
-      if ('phantom' in window) {
-        provider = window.phantom?.solana;
-        console.log("found");
-        return true
-      } else {
-        console.log("not found");
-        return false
-      }
-    }
-
-    const wallet = getProvider()
-
-    if (!wallet) {
-      setTimeout(() => {
-        getProvider()
-      }, 2000);
-    }
-  }, [])
-
-
-  for (let i = 1; i <= 5; i++) {
-    paths.push(require(`../NFTPictures/${i}.jpg`))
+  for (let i = 1; i < 5; i++) {
+    paths.push(`https://nft-backend1.onrender.com/video/${i}`)
   }
 
   async function buy() {
-
     try {
-      const wallet = Keypair.generate()
-      let connection = new Connection(clusterApiUrl("devnet"), "confirmed")
-
-      const aidropsig = await connection.requestAirdrop(wallet.publicKey, LAMPORTS_PER_SOL / 2)
-
-      await connection.confirmTransaction(aidropsig)
-
-      let mint = await createMint(
-        connection,
-        wallet,
-        wallet.publicKey,
-        null,
-        0
-      );
-
-      console.log("NFT Mint : " + mint.toBase58());
-
-      let tokenAcc = await getOrCreateAssociatedTokenAccount(connection,
-        wallet,
-        mint,
-        wallet.publicKey
-      );
-
-      console.log("Token acc : " + tokenAcc.address.toBase58());
-
-      const sig = await mintTo(
-        connection,
-        wallet,
-        new PublicKey(mint.toBase58()),
-        new PublicKey(tokenAcc.address.toBase58()),
-        wallet.publicKey,
-        1
+      const provider = window.phantom.solana;
+      const sendTx = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: activeAcc,
+          toPubkey: OWNER,
+          lamports: LAMPORTS_PER_SOL / 10
+        })
       )
+      const hash = await (await connection.getLatestBlockhash("finalized")).blockhash
 
-      const tokens = await getAccount(connection, tokenAcc.address)
-      console.log(tokens);
-
-      const toTokenAcc = await getOrCreateAssociatedTokenAccount(connection, wallet, mint, new PublicKey(activeAcc))
-
-      console.log("user token acc : " + toTokenAcc.address);
-
-      const sendtokens = await transfer(
-        connection,
-        wallet,
-        tokenAcc.address,
-        toTokenAcc.address,
-        wallet.publicKey,
-        1
-      )
-
-      console.log("user send token sig : " + sendtokens);
-
-
-      const usertokens = await getAccount(connection, toTokenAcc.address)
-      console.log("user has : " + usertokens.amount);
-
-      return true;
+      sendTx.recentBlockhash = hash
+      sendTx.feePayer = activeAcc
+      const res = await provider.signAndSendTransaction(sendTx)
+      console.log(res);
+      return true
 
     } catch (e) {
       console.log(e);
+      return false
     }
+
+
+
+
   }
 
   async function connectWallet() {
     try {
+      const provider = window.phantom.solana;
       const address = await provider.connect();
       setactiveAcc(address.publicKey)
     }

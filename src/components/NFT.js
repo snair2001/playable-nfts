@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import css from "../styles/NFT.module.css"
 import { Button, Modal } from 'react-bootstrap'
 
@@ -6,14 +6,17 @@ function NFT({ src, buy }) {
 
     const [isBought, setisBought] = useState(false)
     const [txSuccess, settxSuccess] = useState()
+    const videoRef = useRef(null);
 
     async function handleBuy() {
         let result = await buy();
         if (result) {
+            videoRef.current.play();
             setisBought(true)
             settxSuccess(true)
         }
         else {
+            videoRef.current.pause()
             settxSuccess(false)
         }
     }
@@ -39,15 +42,17 @@ function NFT({ src, buy }) {
             </Modal>
 
             <header style={{ textAlign: "center" }}> {`NFT #${Math.floor(Math.random() * 10000)}`}</header>
-            <img src={src} alt={"loading.."} style={{ height: "13rem" }} className={css.NFT} />
+            <video controls={isBought} ref={videoRef} style={{ height: "13rem" }} className={css.NFT} >
+                <source src={src} />
+            </ video >
             {
                 isBought ?
-                    <div style={{ fontSize: "1.5rem", textAlign: "center", backgroundColor: "green" }}>Sold !</div> :
+                    <div style={{ fontSize: "1.5rem", textAlign: "center", backgroundColor: "green" }}>Success!</div> :
                     <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "1.3rem", textAlign: "left" }}>
-                            Price : 1 SOL
+                        <span style={{ marginLeft : "0.5rem", fontSize: "1.3rem", textAlign: "left" }}>
+                            Price : 0.1 SOL
                         </span>
-                        <Button onClick={handleBuy}>Buy</Button>
+                        <Button onClick={handleBuy}>Play</Button>
                     </div>
             }
         </div>

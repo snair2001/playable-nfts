@@ -11,7 +11,6 @@
 
 .wrapper {
     background-color: rgba(0, 0, 0, 0.488);
-    width: 100vw;
     display: flex;
     margin-top: 10vh;
     flex-wrap: wrap;
@@ -24,7 +23,6 @@
     margin: 1.3rem;
     font-size: 2rem;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    opacity: 0.4;
-    background-color: rgba(0, 0, 255, 0.219);
+    background-color: rgba(0, 128, 0, 0.489);
     background-size: cover;
 }
